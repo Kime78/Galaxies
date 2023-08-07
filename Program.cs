@@ -1,36 +1,25 @@
-using System.Diagnostics;
-using ServerJarsAPI;
-using ServerJarsAPI.Events;
-
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
-
-if (!Directory.Exists("Instances"))
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
-    Directory.CreateDirectory("Instances");
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
 
-//download minecraft server jar
-var serversAPI = new ServerJars();
-using var fileStream1 = File.Create("./forge.jar");
-Progress<ProgressEventArgs> progress = new();
-progress.ProgressChanged += (_, e) =>
-{
-    Console.Write($"\rProgress: {e.ProgressPercentage}% ({e.BytesTransferred / 1024 / 1024}MB / {e.TotalBytes / 1024 / 1024}MB)          ");
-};
-await serversAPI.GetJar(fileStream1, "modded", "forge", progress: progress);
-await fileStream1.FlushAsync();
-Console.WriteLine($"\nDownloaded {fileStream1.Length / 1024 / 1024}MB to {fileStream1.Name}");
+app.UseAuthorization();
 
-//execute the server command command
-Process p = new Process();
-p.StartInfo.UseShellExecute = false;
-p.StartInfo.FileName = "java";
-p.StartInfo.Arguments = "-Xmx1024M -Xms1024M -jar server1.jar nogui";
-p.Start();
-
-app.MapGet("/", () => "Hello World!");
+app.MapControllers();
 
 app.Run();
