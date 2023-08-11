@@ -18,9 +18,9 @@ namespace Galaxies.Controllers
                 Directory.CreateDirectory(path);
             }
             using var stream = System.IO.File.Create(path + "/server.jar");
-            
+
             await serversAPI.GetJar(stream, jar.type, jar.category, jar.version);
-            return Ok();
+            return Ok(); // need to check if the download failed
         }
     }
 }
